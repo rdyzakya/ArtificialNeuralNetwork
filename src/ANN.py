@@ -1,6 +1,6 @@
-import activation
+from src import activation
 import numpy as np
-import utils
+from src import utils
 
 from typing import List
 
@@ -29,7 +29,7 @@ class Dense:
 
 
 		if input_dim != None:
-			self.compile_weight_and_bias(input_dim)
+			self._compile_weight_and_bias(input_dim)
 		else:
 			self.weights = None
 			self.biases = None
@@ -59,7 +59,7 @@ class Dense:
 		result = self.activation(net)
 		return result
 
-	def compile_weight_and_bias(self,input_dim : int):
+	def _compile_weight_and_bias(self,input_dim : int):
 		"""
 		[DESC]
 			Method to initialize weight and bias
@@ -69,6 +69,21 @@ class Dense:
 		self.input_dim = input_dim
 		self.weights = utils.init_weight(input_dim,self.units)
 		self.biases = utils.init_bias(self.units)
+	
+	def compile_weight_and_bias(self,weights : np.ndarray,biases : np.ndarray):
+		"""
+		[DESC]
+			Method to compile weight and bias
+		[PARAMS]
+			weights : np.ndarray
+			biases : np.ndarray
+		"""
+		if weights.shape[0] != self.input_dim or weights.shape[1] != self.units:
+			raise ValueError("Dimension of weights is not correct")
+		if biases.shape[0] != self.units:
+			raise ValueError("Dimension of biases is not correct")
+		self.weights = weights
+		self.biases = biases
 
 class Sequential:
 	"""
@@ -90,7 +105,7 @@ class Sequential:
 		"""
 		if len(self.layers) > 0:
 			input_dim = self.layers[-1].units
-			layer.compile_weight_and_bias(input_dim)
+			layer._compile_weight_and_bias(input_dim)
 		else:
 			if layer.input_dim == None:
 				raise Exception("First layer must contain n input dimension(s)")
@@ -119,4 +134,3 @@ class Sequential:
 
 	def fit(self,X,y,epochs,batch_size):
 		pass
-
