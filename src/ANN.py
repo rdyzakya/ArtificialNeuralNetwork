@@ -1,13 +1,13 @@
-from src import activation
+from .activation import linear, relu, sigmoid
 import numpy as np
-from src import utils
+from .utils  import init_bias, init_weight
 
 from typing import List
 
 act_func = {
-	"linear" : activation.linear,
-	"relu" : activation.relu,
-	"sigmoid" : activation.sigmoid
+	"linear" : linear,
+	"relu" : relu,
+	"sigmoid" : sigmoid
 }
 
 
@@ -67,8 +67,8 @@ class Dense:
 			input_dim : int
 		"""
 		self.input_dim = input_dim
-		self.weights = utils.init_weight(input_dim,self.units)
-		self.biases = utils.init_bias(self.units)
+		self.weights = init_weight(input_dim,self.units)
+		self.biases = init_bias(self.units)
 	
 	def compile_weight_and_bias(self,weights : np.ndarray,biases : np.ndarray):
 		"""
@@ -93,7 +93,7 @@ class Sequential:
 		layers : list of layers
 	"""
 	def __init__(self,random_state=None):
-		self.layers = []
+		self.layers: List[Dense] = []
 		np.random.seed(random_state)
 
 	def add(self,layer : Dense):
