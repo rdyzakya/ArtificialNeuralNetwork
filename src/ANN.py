@@ -128,6 +128,17 @@ class Sequential:
 			result = layer.forward_feed(result)
 		return result
 	
+	def predict(self,X) -> np.ndarray:
+		"""
+		[DESC]
+			Method to execute forward propagation with the given input
+		[PARAMS]
+			X : float, List[List[float]], np.ndarray
+		[RETURN]
+			np.ndarray
+		"""
+		return self.forward_feed(X).flatten()
+	
 	# back propagation
 	def backward_feed(self,y_true,y_pred):
 		pass
