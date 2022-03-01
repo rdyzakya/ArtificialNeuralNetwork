@@ -22,17 +22,28 @@ class Dense:
 		weights : np.ndarray
 		biases : np.ndarray
 	"""
-	def __init__(self,units:int,input_dim:int=None,activation:str="linear"):
+	def __init__(self,units:int,input_dim:int=None,activation_function:str="linear"):
 		self.units = units
-		self.activation = np.vectorize(lambda t : act_func[activation](t))
+		self.activation_function = activation_function
 		self.input_dim = input_dim
-
 
 		if input_dim != None:
 			self._compile_weight_and_bias(input_dim)
 		else:
 			self.weights = None
 			self.biases = None
+
+	def reprJSON(self):
+		return dict(units=self.units, activation_function=self.activation_function, input_dim=self.input_dim,weights=self.weights.tolist(),biases=self.biases.tolist())
+	
+	# def updateWeightBias(self,weight,bias):
+	# 	self.weights = np.array(weight)
+	# 	self.biases = np.array(bias)
+
+
+	def activation(self,obj):
+		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t))
+		return vfunc(obj)
 
 	def batch_biases(self,n : int) -> np.ndarray:
 		"""
@@ -95,6 +106,21 @@ class Sequential:
 	def __init__(self,random_state=None):
 		self.layers: List[Dense] = []
 		np.random.seed(random_state)
+	
+	def reprJSON(self):
+		return dict(layers=self.layers)
+
+	def useJSON(self,data):
+		print(data["layers"])
+		for i in range(len(data["layers"])):
+			units = data["layers"][i]["units"]
+			activation_function = data["layers"][i]["activation_function"]
+			input_dim = data["layers"][i]["input_dim"]
+			weight = np.array(data["layers"][i]["weights"])
+			bias = np.array(data["layers"][i]["biases"])
+			d = Dense(units,input_dim,activation_function)
+			d.compile_weight_and_bias(weight,bias)
+			self.layers.append(d)
 
 	def add(self,layer : Dense):
 		"""
