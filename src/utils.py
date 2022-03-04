@@ -1,5 +1,7 @@
 import numpy as np
 
+from src.ANN import Sequential
+
 def init_weight(row : int,column : int) -> np.ndarray:
 	"""
 	[DESC]
@@ -23,7 +25,7 @@ def init_bias(n : int) -> np.ndarray:
 	"""
 	return np.zeros(n)
 
-def show_model(model):
+def show_model(model: Sequential):
 	print("MODEL INFO")
 	print("========================================================")
 	layers = model.reprJSON()['layers']

@@ -1,0 +1,1 @@
+{"layers": [{"units": 2, "activation_function": "relu", "input_dim": 2, "weights": [[1, 1], [1, 1]], "biases": [0, -1]}, {"units": 1, "activation_function": "linear", "input_dim": 2, "weights": [[1], [-2]], "biases": [0]}]}

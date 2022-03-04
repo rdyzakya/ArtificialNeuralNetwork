@@ -111,7 +111,6 @@ class Sequential:
 		return dict(layers=self.layers)
 
 	def useJSON(self,data):
-		print(data["layers"])
 		for i in range(len(data["layers"])):
 			units = data["layers"][i]["units"]
 			activation_function = data["layers"][i]["activation_function"]
