@@ -1,4 +1,4 @@
-from .activation import linear, relu, sigmoid
+from .activation import linear, relu, sigmoid, softmax
 import numpy as np
 from .utils  import init_bias, init_weight
 
@@ -7,7 +7,8 @@ from typing import List
 act_func = {
 	"linear" : linear,
 	"relu" : relu,
-	"sigmoid" : sigmoid
+	"sigmoid" : sigmoid,
+	"softmax" : softmax
 }
 
 
@@ -42,6 +43,8 @@ class Dense:
 
 
 	def activation(self,obj):
+		if activation_function == "softmax":
+			return act_func["softmax"]
 		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t))
 		return vfunc(obj)
 
