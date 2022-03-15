@@ -1,7 +1,6 @@
 from operator import mod
 from src.ANN import *
 from src.dump import *
-from src.utils import show_model
 import numpy as np
 import json
 
@@ -61,7 +60,7 @@ if __name__ == '__main__':
     # untuk mencoba dump dari load file
     # dump(model1,"tes1.json")
 
-    show_model(model)
+    model.summary()
 
 
     

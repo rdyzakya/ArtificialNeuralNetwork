@@ -1,7 +1,5 @@
 import numpy as np
 
-from src.ANN import Sequential
-
 def init_weight(row : int,column : int) -> np.ndarray:
 	"""
 	[DESC]
@@ -24,20 +22,4 @@ def init_bias(n : int) -> np.ndarray:
 		numpy.ndarray(float)
 	"""
 	return np.zeros(n)
-
-def show_model(model: Sequential):
-	print("MODEL INFO")
-	print("========================================================")
-	layers = model.reprJSON()['layers']
-	for layer in layers:
-		lay = layer.reprJSON()
-		print('units :',lay['units'], end="  ||  ")
-		print('activation function :',lay['activation_function'], end="  ||  ")
-		print('input_dim :',lay['input_dim'])
-		print('weights :')
-		for i in range(len(lay['biases'])):
-			print([lay['biases'][i]] + lay['weights'][i])
-		print("========================================================")
-
-		
 	

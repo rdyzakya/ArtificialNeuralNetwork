@@ -36,15 +36,11 @@ class Dense:
 
 	def reprJSON(self):
 		return dict(units=self.units, activation_function=self.activation_function, input_dim=self.input_dim,weights=self.weights.tolist(),biases=self.biases.tolist())
-	
-	# def updateWeightBias(self,weight,bias):
-	# 	self.weights = np.array(weight)
-	# 	self.biases = np.array(bias)
 
 
 	def activation(self,obj):
-		if activation_function == "softmax":
-			return act_func["softmax"]
+		if self.activation_function == "softmax":
+			return np.apply_along_axis(act_func["softmax"],1,obj)
 		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t))
 		return vfunc(obj)
 
@@ -52,6 +48,7 @@ class Dense:
 		"""
 		[DESC]
 			Turn bias vector into matrix
+			*Deprecated
 		[PARAMS]
 			n : int
 		[RETURN]
@@ -68,8 +65,9 @@ class Dense:
 		[RETURN]
 			np.ndarray
 		"""
-		number_of_batch = len(input_matrix)
-		net = np.dot(input_matrix,self.weights) + self.batch_biases(number_of_batch)
+		appended_input_matrix = np.append(input_matrix,np.ones((input_matrix.shape[0],1)),axis=1)
+		appended_weights = np.append(self.weights,[self.biases],axis=0)
+		net = np.dot(appended_input_matrix,appended_weights)
 		result = self.activation(net)
 		return result
 
@@ -166,6 +164,21 @@ class Sequential:
 			np.ndarray
 		"""
 		return self.forward_feed(X).flatten()
+
+	def summary(self):
+		print("MODEL INFO")
+		print("========================================================")
+		layers = self.reprJSON()['layers']
+		for layer in layers:
+			lay = layer.reprJSON()
+			print('units :',lay['units'], end="  ||  ")
+			print('activation function :',lay['activation_function'], end="  ||  ")
+			print('input_dim :',lay['input_dim'])
+			print('weights :')
+			for i in range(len(lay['biases'])):
+				print([lay['biases'][i]] + lay['weights'][i])
+			print("========================================================")
+
 	
 	# back propagation
 	def backward_feed(self,y_true,y_pred):
