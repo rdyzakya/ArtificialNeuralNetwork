@@ -109,9 +109,21 @@ class Sequential:
 		np.random.seed(random_state)
 	
 	def reprJSON(self):
+		"""
+		[DESC]
+			Method to represent model as JSON
+		[RETURN]
+			dict
+		"""
 		return dict(layers=self.layers)
 
-	def useJSON(self,data):
+	def useJSON(self,data : dict):
+		"""
+		[DESC]
+			Method to use JSON data to initialize model
+		[PARAMS]
+			data : dict
+		"""
 		for i in range(len(data["layers"])):
 			units = data["layers"][i]["units"]
 			activation_function = data["layers"][i]["activation_function"]
@@ -140,7 +152,7 @@ class Sequential:
 	def compile(self):
 		pass
 
-	def forward_feed(self,input_matrix) -> np.ndarray:
+	def forward_feed(self,input_matrix : np.ndarray) -> np.ndarray:
 		"""
 		[DESC]
 			Method to execute forward propagation with the given input
@@ -154,7 +166,7 @@ class Sequential:
 			result = layer.forward_feed(result)
 		return result
 	
-	def predict(self,X) -> np.ndarray:
+	def predict(self,X : np.ndarray) -> np.ndarray:
 		"""
 		[DESC]
 			Method to execute forward propagation with the given input
@@ -166,6 +178,10 @@ class Sequential:
 		return self.forward_feed(X).flatten()
 
 	def summary(self):
+		"""
+		[DESC]
+			Method to print summary of model
+		"""
 		print("MODEL INFO")
 		print("========================================================")
 		layers = self.reprJSON()['layers']
