@@ -1,4 +1,5 @@
 from .activation import linear, relu, sigmoid, softmax
+from .loss import sum_squared_error, cross_entropy_error
 import numpy as np
 from .utils  import init_bias, init_weight
 
@@ -9,6 +10,11 @@ act_func = {
 	"relu" : relu,
 	"sigmoid" : sigmoid,
 	"softmax" : softmax
+}
+
+loss_func = {
+	"sum_squared_error" : sum_squared_error,
+	"cross_entropy_error" : cross_entropy_error
 }
 
 
@@ -22,11 +28,13 @@ class Dense:
 		input_dim : None or int
 		weights : np.ndarray
 		biases : np.ndarray
+		error_term : np.ndarray
 	"""
 	def __init__(self,units:int,input_dim:int=None,activation_function:str="linear"):
 		self.units = units
 		self.activation_function = activation_function
 		self.input_dim = input_dim
+		self.error_term = None
 
 		if input_dim != None:
 			self._compile_weight_and_bias(input_dim)
@@ -117,9 +125,11 @@ class Sequential:
 		Sequential model class
 	[ATTRIB]
 		layers : list of layers
+		loss : loss function
 	"""
 	def __init__(self,random_state=None):
 		self.layers: List[Dense] = []
+		loss = None
 		np.random.seed(random_state)
 	
 	def reprJSON(self) -> dict:
@@ -163,8 +173,16 @@ class Sequential:
 				raise Exception("First layer must contain n input dimension(s)")
 		self.layers.append(layer)
 
-	def compile(self):
-		pass
+	def compile(self, loss : str):
+		"""
+		[DESC]
+			Method to compile model
+		[PARAMS]
+			loss : str
+		"""
+		if loss != "sum_squared_error" or "cross_entropy_error":
+			raise ValueError("Loss function must be sum_squared_error or cross_entropy_error")
+		self.loss = loss
 
 	def forward_feed(self,input_matrix : np.ndarray) -> np.ndarray:
 		"""
@@ -211,8 +229,20 @@ class Sequential:
 
 	
 	# back propagation
-	def backward_feed(self,y_true,y_pred):
-		pass
-
-	def fit(self,X,y,epochs,batch_size):
-		pass
+	def error_term(self,y_true : np.ndarray,y_pred : np.ndarray, layer : int) -> np.ndarray:
+		"""
+		[DESC]
+			Method to calculate error term
+		[PARAMS]
+			y_true : np.ndarray
+			y_pred : np.ndarray
+			layer : int
+		[RETURN]
+			np.ndarray
+		"""
+		if self.loss == None:
+			raise Exception("Loss function must be set")
+		if layer == len(self.layers-1):
+			# basis (last layer)
+			# delta = dE/dO*dO/dI
+			pass

@@ -12,7 +12,7 @@ def relu(x : float,derivative:bool=False) -> float:
 		float
 	"""
 	if derivative:
-		if x <= 0:
+		if x < 0:
 			return 0
 		else:
 			return 1
