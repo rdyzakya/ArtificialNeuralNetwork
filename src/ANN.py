@@ -35,10 +35,24 @@ class Dense:
 			self.biases = None
 
 	def reprJSON(self):
+		"""
+		[DESC]
+			Method to represent Dense layer as JSON
+		[RETURN]
+			dict
+		"""
 		return dict(units=self.units, activation_function=self.activation_function, input_dim=self.input_dim,weights=self.weights.tolist(),biases=self.biases.tolist())
 
 
-	def activation(self,obj):
+	def activation(self,obj : np.ndarray):
+		"""
+		[DESC]
+			Method to activate the layer
+		[PARAMS]
+			obj : np.ndarray
+		[RETURN]
+			np.ndarray
+		"""
 		if self.activation_function == "softmax":
 			return np.apply_along_axis(act_func["softmax"],1,obj)
 		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t))
