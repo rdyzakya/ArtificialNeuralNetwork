@@ -34,7 +34,7 @@ class Dense:
 			self.weights = None
 			self.biases = None
 
-	def reprJSON(self):
+	def reprJSON(self) -> dict:
 		"""
 		[DESC]
 			Method to represent Dense layer as JSON
@@ -122,7 +122,7 @@ class Sequential:
 		self.layers: List[Dense] = []
 		np.random.seed(random_state)
 	
-	def reprJSON(self):
+	def reprJSON(self) -> dict:
 		"""
 		[DESC]
 			Method to represent model as JSON
