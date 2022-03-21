@@ -35,6 +35,7 @@ class Dense:
 		self.activation_function = activation_function
 		self.input_dim = input_dim
 		self.error_term = None
+		self.net = None
 
 		if input_dim != None:
 			self._compile_weight_and_bias(input_dim)
@@ -52,7 +53,7 @@ class Dense:
 		return dict(units=self.units, activation_function=self.activation_function, input_dim=self.input_dim,weights=self.weights.tolist(),biases=self.biases.tolist())
 
 
-	def activation(self,obj : np.ndarray):
+	def activation(self,obj : np.ndarray, derivative : bool=False) -> np.ndarray:
 		"""
 		[DESC]
 			Method to activate the layer
@@ -63,7 +64,7 @@ class Dense:
 		"""
 		if self.activation_function == "softmax":
 			return np.apply_along_axis(act_func["softmax"],1,obj)
-		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t))
+		vfunc = np.vectorize(lambda t : act_func[self.activation_function](t,derivative))
 		return vfunc(obj)
 
 	def batch_biases(self,n : int) -> np.ndarray:
@@ -90,6 +91,7 @@ class Dense:
 		appended_input_matrix = np.append(input_matrix,np.ones((input_matrix.shape[0],1)),axis=1)
 		appended_weights = np.append(self.weights,[self.biases],axis=0)
 		net = np.dot(appended_input_matrix,appended_weights)
+		self.net = net
 		result = self.activation(net)
 		return result
 
@@ -229,20 +231,21 @@ class Sequential:
 
 	
 	# back propagation
-	def error_term(self,y_true : np.ndarray,y_pred : np.ndarray, layer : int) -> np.ndarray:
+	def error_term(self,y_true : np.ndarray,y_pred : np.ndarray) -> np.ndarray:
 		"""
 		[DESC]
 			Method to calculate error term
 		[PARAMS]
 			y_true : np.ndarray
 			y_pred : np.ndarray
-			layer : int
 		[RETURN]
 			np.ndarray
 		"""
 		if self.loss == None:
 			raise Exception("Loss function must be set")
-		if layer == len(self.layers-1):
-			# basis (last layer)
-			# delta = dE/dO*dO/dI
-			pass
+		for ilayer in reversed(range(len(self.layers))):
+			layer = self.layers[ilayer]
+			if ilayer == len(self.layers) - 1:
+				layer.error_term =  layer.activation(layer.net,derivative=True) * loss_func[self.loss](y_true=y_true,y_pred=y_pred,derivative=True)
+			else:
+				layer.error_term = layer.activation(layer.net,derivative=True) * np.sum(layer.weights*layer.error_term,axis=1)
