@@ -35,6 +35,7 @@ class Dense:
 		self.activation_function = activation_function
 		self.input_dim = input_dim
 		self.error_term = None
+		self.x = None
 		self.net = None
 
 		if input_dim != None:
@@ -79,7 +80,16 @@ class Dense:
 		"""
 		return np.array([self.biases for i in range(n)])
 	
-	def _weights(self):
+	def _input(self, input_matrix : np.ndarray) -> np.ndarray:
+		"""
+		[DESC]
+			Method to return input matrix appended by ones for the bias
+		[RETURN]
+			int
+		"""
+		return np.append(input_matrix,np.ones((input_matrix.shape[0],1)),axis=1)
+	
+	def _weights(self) -> np.ndarray:
 		"""
 		[DESC]
 			Method to return weights and biases weight
@@ -97,11 +107,14 @@ class Dense:
 		[RETURN]
 			np.ndarray
 		"""
-		appended_input_matrix = np.append(input_matrix,np.ones((input_matrix.shape[0],1)),axis=1)
-		appended_weights = self._weights()
-		net = np.dot(appended_input_matrix,appended_weights)
+		appended_weight = self._input(input_matrix)
+		net = np.dot(appended_weight,self._weights())
 		self.net = net
-		result = self.activation(net)
+		try:
+			result = self.activation(net)
+		except Exception as e:
+			raise Exception(e.__str__() + ", try a smaller learning rate if you are trying to traing the model.")
+		self.x = np.sum(appended_weight,axis=0).reshape(1,appended_weight.shape[1])
 		return result
 
 	def _compile_weight_and_bias(self,input_dim : int):
@@ -251,15 +264,28 @@ class Sequential:
 			np.ndarray
 		"""
 		if y_true.shape != y_pred.shape:
-			raise ValueError("Length of y_true and y_pred must be same")
+			raise ValueError("Shape of y_true and y_pred must be same")
 		if self.loss == None:
 			raise Exception("Loss function must be set using compile method")
 		for ilayer in reversed(range(len(self.layers))):
 			layer = self.layers[ilayer]
-			# print(layer.net)
 			if ilayer == len(self.layers) - 1:
 				layer.error_term =  np.sum(layer.activation(layer.net,derivative=True) * loss_func[self.loss](y_true=y_true,y_pred=y_pred,derivative=True),axis=0)
 			else:
 				d_ilayer = layer.activation(layer.net,derivative=True)
 				wkh_dk = np.sum(self.layers[ilayer+1].weights * self.layers[ilayer+1].error_term,axis=1)
 				layer.error_term = np.sum(d_ilayer * wkh_dk,axis=0)
+	
+	def update_weight(self,learning_rate : float):
+		for layer in self.layers:
+			old_weight = layer._weights()
+			delta = np.array([layer.error_term for i in range(old_weight.shape[0])])
+			new_weight = old_weight + learning_rate * (layer.x.T * delta)
+			layer.weights = new_weight[:-1]
+			layer.biases = new_weight[-1]
+	
+	def _backprop(self,X,y,learning_rate):
+		y_pred = self.predict(X)
+		y_true = y
+		self.error_term(y_true,y_pred)
+		self.update_weight(learning_rate)
