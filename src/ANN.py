@@ -78,6 +78,15 @@ class Dense:
 			np.ndarray
 		"""
 		return np.array([self.biases for i in range(n)])
+	
+	def _weights(self):
+		"""
+		[DESC]
+			Method to return weights and biases weight
+		[RETURN]
+			np.ndarray
+		"""
+		return np.append(self.weights,[self.biases],axis=0)
 
 	def forward_feed(self,input_matrix : np.ndarray) -> np.ndarray:
 		"""
@@ -89,7 +98,7 @@ class Dense:
 			np.ndarray
 		"""
 		appended_input_matrix = np.append(input_matrix,np.ones((input_matrix.shape[0],1)),axis=1)
-		appended_weights = np.append(self.weights,[self.biases],axis=0)
+		appended_weights = self._weights()
 		net = np.dot(appended_input_matrix,appended_weights)
 		self.net = net
 		result = self.activation(net)
@@ -131,7 +140,7 @@ class Sequential:
 	"""
 	def __init__(self,random_state=None):
 		self.layers: List[Dense] = []
-		loss = None
+		self.loss = None
 		np.random.seed(random_state)
 	
 	def reprJSON(self) -> dict:
@@ -182,7 +191,7 @@ class Sequential:
 		[PARAMS]
 			loss : str
 		"""
-		if loss != "sum_squared_error" or "cross_entropy_error":
+		if loss != "sum_squared_error" and loss != "cross_entropy_error":
 			raise ValueError("Loss function must be sum_squared_error or cross_entropy_error")
 		self.loss = loss
 
@@ -209,7 +218,7 @@ class Sequential:
 		[RETURN]
 			np.ndarray
 		"""
-		return self.forward_feed(X).flatten()
+		return self.forward_feed(X)
 
 	def summary(self):
 		"""
@@ -241,11 +250,16 @@ class Sequential:
 		[RETURN]
 			np.ndarray
 		"""
+		if y_true.shape != y_pred.shape:
+			raise ValueError("Length of y_true and y_pred must be same")
 		if self.loss == None:
-			raise Exception("Loss function must be set")
+			raise Exception("Loss function must be set using compile method")
 		for ilayer in reversed(range(len(self.layers))):
 			layer = self.layers[ilayer]
+			# print(layer.net)
 			if ilayer == len(self.layers) - 1:
-				layer.error_term =  layer.activation(layer.net,derivative=True) * loss_func[self.loss](y_true=y_true,y_pred=y_pred,derivative=True)
+				layer.error_term =  np.sum(layer.activation(layer.net,derivative=True) * loss_func[self.loss](y_true=y_true,y_pred=y_pred,derivative=True),axis=0)
 			else:
-				layer.error_term = layer.activation(layer.net,derivative=True) * np.sum(layer.weights*layer.error_term,axis=1)
+				d_ilayer = layer.activation(layer.net,derivative=True)
+				wkh_dk = np.sum(self.layers[ilayer+1].weights * self.layers[ilayer+1].error_term,axis=1)
+				layer.error_term = np.sum(d_ilayer * wkh_dk,axis=0)
