@@ -165,6 +165,7 @@ class Sequential:
     def __init__(self, random_state=None):
         self.layers: List[Dense] = []
         self.loss = None
+        self.errors = []
         np.random.seed(random_state)
 
     def reprJSON(self) -> dict:
@@ -308,6 +309,10 @@ class Sequential:
                 layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
 
     def update_weight(self):
+        """
+        [DESC]
+                Method to update weights
+        """
         if not self.learning_rate:
             raise ValueError("Must compile model first")
         for layer in self.layers:
@@ -317,13 +322,29 @@ class Sequential:
             layer.weights = new_weight[:-1]
             layer.biases = new_weight[-1]
 
-    def _backprop(self, X, y):
+    def _backprop(self, X:np.ndarray, y:np.ndarray):
+        """
+        [DESC]
+                Method to execute back propagation
+        [PARAMS]
+                X : float, List[List[float]], np.ndarray
+                y : float, List[List[float]], np.ndarray
+        """
         y_pred = self.predict(X)
         y_true = y
         self.error_term(y_true, y_pred)
         self.update_weight()
 
     def fit(self, x: np.ndarray, y: np.ndarray, batch_size: int = 1, epoch: int = 300):
+        """
+        [DESC]
+                Method to fit model
+        [PARAMS]
+                x : float, List[List[float]], np.ndarray
+                y : float, List[List[float]], np.ndarray
+                batch_size : int
+                epoch : int
+        """
         for _ in range(epoch):
             E = 0
             j = 0
@@ -337,5 +358,6 @@ class Sequential:
                     y_true=y_batch, y_pred=y_pred, derivative=False
                 )
                 j += batch_size
+            self.errors.append(E)
             if E <= self.error_threshold:
                 break
