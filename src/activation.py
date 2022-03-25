@@ -48,16 +48,30 @@ def sigmoid(x : float,derivative:bool=False) -> float:
 		return p*(1-p)
 	return p
 
-def softmax(arr : List[float],derivative:bool=False) -> float:
+def softmax(arr : List[float]) -> List[float]:
 	"""
 	[DESC]
 		Softmax function
 	[PARAMS]
-		x : list of float
-		derivative = bool
+		arr : list of float
 	[RETURN]
-		float
+		list of float
 	"""
-	if derivative:
-		pass
 	return np.exp(arr)/np.sum(np.exp(arr))
+
+
+def softmax_derive(probs: List[float], toDerive: int, respectTo: int) -> float:
+	"""
+	[DESC]
+		Softmax function derivation
+	[PARAMS]
+		probs: list of probabillities
+		toDerive: which probability to derive
+		respectTo: with respect to which raw value
+	[RETURN]
+		float, derivation result
+	"""
+	if(toDerive == respectTo):
+		return probs[toDerive] * (1-probs[toDerive])
+	else:
+		return -probs[toDerive] * probs[respectTo]
