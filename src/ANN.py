@@ -121,7 +121,7 @@ class Dense:
         except Exception as e:
             raise Exception(
                 e.__str__()
-                + ", try a smaller learning rate if you are trying to traing the model."
+                + ", try a smaller learning rate or smaller batch_size if you are trying to traing the model."
             )
         self.x = np.sum(appended_weight, axis=0).reshape(1, appended_weight.shape[1])
         return result
