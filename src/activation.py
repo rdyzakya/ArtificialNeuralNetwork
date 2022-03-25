@@ -64,6 +64,14 @@ def softmax(arr: List[float], derivative: bool = False) -> List[float]:
             list of float
     """
     if(derivative):
-        applyAll = np.vectorize(softmax_derive)
-        return applyAll(arr)
+        retval = []
+        for i in range(len(arr)):
+                temp = []
+                for j in range(len(arr)):
+                        if(i == j):
+                                temp.append(arr[i]*(1-arr[i]))
+                        else:
+                                temp.append(-arr[i]*arr[j])
+                retval.append(temp)
+        return np.array(retval)
     return np.exp(arr) / np.sum(np.exp(arr))
