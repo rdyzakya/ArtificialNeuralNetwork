@@ -6,9 +6,10 @@ import json
 
 if __name__ == "__main__":
     input_single = np.array([[1, 1]])
+    # input_single2 = np.array([[1, 1]])
 
-    input_batch = np.array([[0, 1], [1, 0], [0, 0], [1, 1]])
-    output_batch = np.array([[1], [1], [0], [0]])
+    # input_batch = np.array([[0, 1], [1, 0], [0, 0], [1, 1]])
+    # output_batch = np.array([[1], [1], [0], [0]])
 
     # untuk mencoba input dari bacaan file (load file)
     # data = load("tes.json")
@@ -46,15 +47,38 @@ if __name__ == "__main__":
     # res_batch = model.predict(input_batch)
 
     # print(res_batch)
+    lines = []
+    with open("data_banknote_authentication.txt", "r") as f:
+        lines = f.readlines()
 
-    # Model RelU + Linear
-    model = Sequential()
-    model.add(Dense(units=2, input_dim=2, activation_function="relu"))
-    model.add(Dense(units=1, activation_function="linear"))
-    model.compile("sum_squared_error", 0.02, 0.05)
-    model.fit(input_batch, output_batch, 1)
-    model.summary()
-    print(model.predict(input_single))
+    attributes = []
+    classes = []
+
+    for line in lines:
+        data = line.split(",")
+        classes.append([data.pop()])
+        attributes.append(data)
+
+    inputdata = np.array(attributes).astype(float)
+    outputdata = np.array(classes).astype(float)
+
+    # print(inputdata)
+    # print(outputdata)
+
+    inputsingle_0 = np.array([[3.6216, 8.6661, -2.8073, -0.44699]])
+    inputsingle_1 = np.array([[-1.7279, -6.841, 8.9494, 0.68058]])
+
+    # # Model RelU + Linear
+    model = Sequential(random_state=69)
+    model.add(Dense(units=2, input_dim=4, activation_function="relu"))
+    model.add(Dense(units=1, activation_function="sigmoid"))
+    model.compile("sum_squared_error", 0.0001, 0.01)
+    model.fit(inputdata, outputdata, batch_size=10)
+    print(model.predict(inputsingle_0))
+    print(model.predict(inputsingle_1))
+    # model.summary()
+    # print(model.predict(input_single))
+    # print(model.predict(input_single2))
 
     # weight_hidden_layer = np.array([[1, 1], [1, 1]])
     # bias_hidden_layer = np.array([0, -1])
