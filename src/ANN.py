@@ -208,7 +208,7 @@ class Sequential:
                 raise Exception("First layer must contain n input dimension(s)")
         self.layers.append(layer)
 
-    def compile(self, loss: str):
+    def compile(self, loss: str, learning_rate: float, error_thres: float):
         """
         [DESC]
                 Method to compile model
@@ -220,6 +220,8 @@ class Sequential:
                 "Loss function must be sum_squared_error or cross_entropy_error"
             )
         self.loss = loss
+        self.learning_rate = learning_rate
+        self.error_threshold = error_thres
 
     def forward_feed(self, input_matrix: np.ndarray) -> np.ndarray:
         """
@@ -305,19 +307,35 @@ class Sequential:
                 )
                 layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
 
-    def update_weight(self, learning_rate: float):
+    def update_weight(self):
+        if not self.learning_rate:
+            raise ValueError("Must compile model first")
         for layer in self.layers:
             old_weight = layer._weights()
             delta = np.array([layer.error_term for i in range(old_weight.shape[0])])
-            new_weight = old_weight + learning_rate * (layer.x.T * delta)
+            new_weight = old_weight + self.learning_rate * (layer.x.T * delta)
             layer.weights = new_weight[:-1]
             layer.biases = new_weight[-1]
 
-    def _backprop(self, X, y, learning_rate):
+    def _backprop(self, X, y):
         y_pred = self.predict(X)
         y_true = y
         self.error_term(y_true, y_pred)
-        self.update_weight(learning_rate)
+        self.update_weight()
 
-
-# def fit(self, x: np.ndarray, y: np.ndarray,)
+    def fit(self, x: np.ndarray, y: np.ndarray, batch_size: int = 1, epoch: int = 300):
+        for _ in range(epoch):
+            E = 0
+            j = 0
+            while j < x.shape[0]:
+                endIdx = min(j + batch_size, x.shape[0])
+                x_batch = x[j:endIdx]
+                y_batch = y[j:endIdx]
+                self._backprop(x_batch, y_batch)
+                y_pred = self.predict(x_batch)
+                E += loss_func[self.loss](
+                    y_true=y_batch, y_pred=y_pred, derivative=False
+                )
+                j += batch_size
+            if E <= self.error_threshold:
+                break
