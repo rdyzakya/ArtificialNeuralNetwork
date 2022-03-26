@@ -63,7 +63,8 @@ def softmax(arr: List[float], derivative: bool = False) -> List[float]:
     [RETURN]
             list of float
     """
-    p = np.exp(arr) / np.sum(np.exp(arr))
+    exps = np.exp(arr - arr.max())
+    p =  exps / np.sum(exps, axis=0)
     if(derivative):
         retval = []
         for i in range(len(p)):
