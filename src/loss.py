@@ -31,8 +31,12 @@ def entropy(y_true:float, y_pred:float,derivative=False):
     """
     if not derivative:
         if y_true == 1:
+            if y_pred == 0:
+                return -1
             return -np.log(y_pred)
         else:
+            if y_pred == 1:
+                return -1
             return -np.log(1-y_pred)
     if y_true == 1:
         if y_pred == 0:

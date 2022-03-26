@@ -11,7 +11,7 @@ def init_weight(row: int, column: int) -> np.ndarray:
     [RETURN]
             numpy.ndarray(float)
     """
-    return np.random.randn(row, column)
+    return np.random.randn(row, column) * np.sqrt(1/column)
 
 
 def init_bias(n: int) -> np.ndarray:

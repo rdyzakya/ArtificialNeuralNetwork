@@ -111,8 +111,8 @@ class Dense:
         [RETURN]
                 np.ndarray
         """
-        appended_weight = self._input(input_matrix)
-        net = np.dot(appended_weight, self._weights())
+        appended_input = self._input(input_matrix)
+        net = np.dot(appended_input, self._weights())
         self.net = net
         try:
             result = self.activation(net)
@@ -121,7 +121,7 @@ class Dense:
                 e.__str__()
                 + ", try a smaller learning rate or smaller batch_size if you are trying to traing the model."
             )
-        self.x = np.sum(appended_weight, axis=0).reshape(1, appended_weight.shape[1])
+        self.x = np.sum(appended_input, axis=0).reshape(1, appended_input.shape[1])
         return result
 
     def _compile_weight_and_bias(self, input_dim: int):
@@ -318,11 +318,8 @@ class Sequential:
             else:
                 if type(self.layers[ilayer + 1]) == Dense:
                     d_ilayer = layer.activation(layer.net, derivative=True)
-                    wkh_dk = np.sum(
-                        self.layers[ilayer + 1].weights
-                        * self.layers[ilayer + 1].error_term,
-                        axis=1,
-                    )
+                    wkh_dk = np.dot(self.layers[ilayer + 1].error_term.reshape(1,len(self.layers[ilayer + 1].error_term)),
+                    self.layers[ilayer + 1].weights.T)
                     layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
                 elif type(self.layers[ilayer + 1]) == SoftMax:
                     do_di = layer.activation(layer.net, derivative=True)
@@ -343,8 +340,7 @@ class Sequential:
             if type(layer) == SoftMax:
                 continue
             old_weight = layer._weights()
-            delta = np.array([layer.error_term for i in range(old_weight.shape[0])])
-            new_weight = old_weight + self.learning_rate * (layer.x.T * delta)
+            new_weight = old_weight + self.learning_rate * np.dot(layer.error_term.reshape(1,len(layer.error_term)).T,layer.x).T
             layer.weights = new_weight[:-1]
             layer.biases = new_weight[-1]
 
