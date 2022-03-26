@@ -1,3 +1,4 @@
+from matplotlib import units
 from .activation import linear, relu, sigmoid, softmax
 from .loss import sum_squared_error, cross_entropy_error
 import numpy as np
@@ -29,6 +30,7 @@ class Dense:
     def __init__(
         self, units: int, input_dim: int = None, activation_function: str = "linear"
     ):
+        self.type = "dense"
         self.units = units
         self.activation_function = activation_function
         self.input_dim = input_dim
@@ -50,6 +52,7 @@ class Dense:
                 dict
         """
         return dict(
+            type = self.type,
             units=self.units,
             activation_function=self.activation_function,
             input_dim=self.input_dim,
@@ -159,8 +162,20 @@ class SoftMax:
     """
 
     def __init__(self):
+        self.type = "softmax"
         self.error_term = None
         self.net = None
+    
+    def reprJSON(self) -> dict:
+        """
+        [DESC]
+                Method to represent Softmax layer as JSON
+        [RETURN]
+                dict
+        """
+        return dict(
+            type = self.type
+        )
     
     def activation(self, obj: np.ndarray, derivative: bool = False) -> np.ndarray:
         return np.apply_along_axis(softmax, 1, obj, derivative=derivative)
@@ -180,7 +195,7 @@ class Sequential:
     """
 
     def __init__(self, random_state=None):
-        self.layers: List[Dense] = []
+        self.layers = []
         self.loss = None
         self.errors = []
         np.random.seed(random_state)
@@ -202,14 +217,19 @@ class Sequential:
                 data : dict
         """
         for i in range(len(data["layers"])):
-            units = data["layers"][i]["units"]
-            activation_function = data["layers"][i]["activation_function"]
-            input_dim = data["layers"][i]["input_dim"]
-            weight = np.array(data["layers"][i]["weights"])
-            bias = np.array(data["layers"][i]["biases"])
-            d = Dense(units, input_dim, activation_function)
-            d.compile_weight_and_bias(weight, bias)
-            self.layers.append(d)
+            if(data["layers"][i]["type"] == "softmax"):
+                s = SoftMax()
+                self.layers.append(s)
+            else:
+                units = data["layers"][i]["units"]
+                activation_function = data["layers"][i]["activation_function"]
+                input_dim = data["layers"][i]["input_dim"]
+                weight = np.array(data["layers"][i]["weights"])
+                bias = np.array(data["layers"][i]["biases"])
+                d = Dense(units, input_dim, activation_function)
+                d.compile_weight_and_bias(weight, bias)
+                self.layers.append(d)
+            
 
     def add(self, layer: Dense):
         """
