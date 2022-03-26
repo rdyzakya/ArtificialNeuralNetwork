@@ -338,13 +338,13 @@ class Sequential:
             else:
                 if type(self.layers[ilayer + 1]) == Dense:
                     d_ilayer = layer.activation(layer.net, derivative=True)
-                    wkh_dk = np.dot(self.layers[ilayer + 1].error_term.reshape(1,len(self.layers[ilayer + 1].error_term)),
+                    wkh_dk = np.dot(self.layers[ilayer + 1].error_term,
                     self.layers[ilayer + 1].weights.T)
                     layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
                 elif type(self.layers[ilayer + 1]) == SoftMax:
-                    di_dnet = np.array([np.sum(layer.activation(layer.net, derivative=True),axis=0)])
-                    do_di = self.layers[ilayer + 1].error_term
-                    layer.error_term = np.dot(di_dnet, do_di).flatten()
+                    di_dnet = np.sum(layer.activation(layer.net, derivative=True),axis=0)
+                    do_di = self.layers[ilayer + 1].error_term.diagonal()
+                    layer.error_term = di_dnet * do_di
 
     def update_weight(self):
         """
@@ -357,10 +357,11 @@ class Sequential:
             if type(layer) == SoftMax:
                 continue
             old_weight = layer._weights()
-            new_weight = old_weight + self.learning_rate * np.dot(layer.error_term.reshape(1,len(layer.error_term)).T,layer.x).T
+            err_term = layer.error_term.reshape(1,layer.error_term.shape[0]).T
+            xs = layer.x
+            new_weight = old_weight + self.learning_rate * np.dot(err_term,xs).T
             layer.weights = new_weight[:-1]
             layer.biases = new_weight[-1]
-
     def _backprop(self, X:np.ndarray, y:np.ndarray):
         """
         [DESC]
