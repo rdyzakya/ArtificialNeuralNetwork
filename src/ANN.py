@@ -5,7 +5,7 @@ from .utils import init_bias, init_weight
 
 from typing import List
 
-act_func = {"linear": linear, "relu": relu, "sigmoid": sigmoid, "softmax": softmax}
+act_func = {"linear": linear, "relu": relu, "sigmoid": sigmoid}
 
 loss_func = {
     "sum_squared_error": sum_squared_error,
@@ -67,8 +67,6 @@ class Dense:
         [RETURN]
                 np.ndarray
         """
-        if self.activation_function == "softmax":
-            return np.apply_along_axis(act_func["softmax"], 1, obj)
         vfunc = np.vectorize(
             lambda t: act_func[self.activation_function](t, derivative)
         )
@@ -152,6 +150,25 @@ class Dense:
         self.weights = weights
         self.biases = biases
 
+class SoftMax:
+    """
+    [DESC]
+            Softmax layer class
+    [ATTRIB]
+            error_term : np.ndarray
+    """
+
+    def __init__(self):
+        self.error_term = None
+        self.net = None
+    
+    def activation(self, obj: np.ndarray, derivative: bool = False) -> np.ndarray:
+        return np.apply_along_axis(softmax, 1, obj, derivative=derivative)
+
+    def forward_feed(self, input_matrix: np.ndarray) -> np.ndarray:
+        self.net = input_matrix
+        return self.activation(input_matrix)
+
 
 class Sequential:
     """
@@ -201,12 +218,13 @@ class Sequential:
         [PARAMS]
                 layer : Dense
         """
-        if len(self.layers) > 0:
-            input_dim = self.layers[-1].units
-            layer._compile_weight_and_bias(input_dim)
-        else:
-            if layer.input_dim == None:
-                raise Exception("First layer must contain n input dimension(s)")
+        if type(layer) != SoftMax:
+            if len(self.layers) > 0:
+                input_dim = self.layers[-1].units
+                layer._compile_weight_and_bias(input_dim)
+            else:
+                if layer.input_dim == None:
+                    raise Exception("First layer must contain n input dimension(s)")
         self.layers.append(layer)
 
     def compile(self, loss: str, learning_rate: float, error_thres: float):
@@ -292,21 +310,27 @@ class Sequential:
         for ilayer in reversed(range(len(self.layers))):
             layer = self.layers[ilayer]
             if ilayer == len(self.layers) - 1:
-                layer.error_term = np.sum(
-                    layer.activation(layer.net, derivative=True)
-                    * loss_func[self.loss](
-                        y_true=y_true, y_pred=y_pred, derivative=True
-                    ),
-                    axis=0,
-                )
+                if type(layer) == SoftMax and self.loss != "cross_entropy_error":
+                    raise Exception("Loss function must be cross_entropy_error for softmax layer")
+                de_do = loss_func[self.loss](y_true=y_true, y_pred=y_pred, derivative=True)
+                do_di = layer.activation(layer.net, derivative=True)
+                layer.error_term = np.sum(de_do*do_di,axis=0)
             else:
-                d_ilayer = layer.activation(layer.net, derivative=True)
-                wkh_dk = np.sum(
-                    self.layers[ilayer + 1].weights
-                    * self.layers[ilayer + 1].error_term,
-                    axis=1,
-                )
-                layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
+                if type(self.layers[ilayer + 1]) == Dense:
+                    d_ilayer = layer.activation(layer.net, derivative=True)
+                    wkh_dk = np.sum(
+                        self.layers[ilayer + 1].weights
+                        * self.layers[ilayer + 1].error_term,
+                        axis=1,
+                    )
+                    layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
+                elif type(self.layers[ilayer + 1]) == SoftMax:
+                    do_di = layer.activation(layer.net, derivative=True)
+                    layer.error_term = np.sum(
+                        self.layers[ilayer + 1].error_term
+                        * do_di,
+                        axis=0,
+                    )
 
     def update_weight(self):
         """
@@ -316,6 +340,8 @@ class Sequential:
         if not self.learning_rate:
             raise ValueError("Must compile model first")
         for layer in self.layers:
+            if type(layer) == SoftMax:
+                continue
             old_weight = layer._weights()
             delta = np.array([layer.error_term for i in range(old_weight.shape[0])])
             new_weight = old_weight + self.learning_rate * (layer.x.T * delta)

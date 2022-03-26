@@ -63,15 +63,16 @@ def softmax(arr: List[float], derivative: bool = False) -> List[float]:
     [RETURN]
             list of float
     """
+    p = np.exp(arr) / np.sum(np.exp(arr))
     if(derivative):
         retval = []
-        for i in range(len(arr)):
+        for i in range(len(p)):
                 temp = []
-                for j in range(len(arr)):
+                for j in range(len(p)):
                         if(i == j):
-                                temp.append(arr[i]*(1-arr[i]))
+                                temp.append(p[i]*(1-p[i]))
                         else:
-                                temp.append(-arr[i]*arr[j])
+                                temp.append(-p[i]*p[j])
                 retval.append(temp)
-        return np.array(retval)
-    return np.exp(arr) / np.sum(np.exp(arr))
+        return np.sum(np.array(retval),axis=0)
+    return p
