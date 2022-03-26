@@ -122,7 +122,7 @@ class Dense:
         except Exception as e:
             raise Exception(
                 e.__str__()
-                + ", try a smaller learning rate or smaller batch_size if you are trying to traing the model."
+                + ", try a smaller learning rate or smaller batch_size if you are trying to traing the model. Net : " + str(net)
             )
         self.x = np.sum(appended_input, axis=0).reshape(1, appended_input.shape[1])
         return result
@@ -342,12 +342,9 @@ class Sequential:
                     self.layers[ilayer + 1].weights.T)
                     layer.error_term = np.sum(d_ilayer * wkh_dk, axis=0)
                 elif type(self.layers[ilayer + 1]) == SoftMax:
-                    do_di = layer.activation(layer.net, derivative=True)
-                    layer.error_term = np.sum(
-                        self.layers[ilayer + 1].error_term
-                        * do_di,
-                        axis=0,
-                    )
+                    di_dnet = np.array([np.sum(layer.activation(layer.net, derivative=True),axis=0)])
+                    do_di = self.layers[ilayer + 1].error_term
+                    layer.error_term = np.dot(di_dnet, do_di).flatten()
 
     def update_weight(self):
         """

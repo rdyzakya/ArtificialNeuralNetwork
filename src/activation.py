@@ -45,14 +45,11 @@ def sigmoid(x: float, derivative: bool = False) -> float:
     [RETURN]
             float
     """
+    x = np.clip(x,-500,500)
     p = 1 / (1 + np.exp(-x))
     if derivative:
         return p * (1 - p)
     return p
-
-
-def softmax_derive(x):
-        return x * (1-x)
 
 def softmax(arr: List[float], derivative: bool = False) -> List[float]:
     """
@@ -75,5 +72,5 @@ def softmax(arr: List[float], derivative: bool = False) -> List[float]:
                         else:
                                 temp.append(-p[i]*p[j])
                 retval.append(temp)
-        return np.sum(np.array(retval),axis=0)
+        return np.array(retval)
     return p

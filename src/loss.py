@@ -50,8 +50,7 @@ def entropy(y_true:float, y_pred:float,derivative=False):
 
 
 def cross_entropy_error(
-    y_true: np.ndarray, y_pred: np.ndarray, derivative: bool = False
-) -> float:
+    y_true: np.ndarray, y_pred: np.ndarray, derivative: bool = False, epsilon:float=1e-12) -> float:
     """
     [DESC]
         Function to calculate cross entropy error
@@ -59,10 +58,15 @@ def cross_entropy_error(
         y_true : np.ndarray
         y_pred : np.ndarray
         derivative : bool
+        epsilon : float
     [RETURN]
         float
     """
-    vect = np.vectorize(lambda true, pred, derivative: entropy(true, pred, derivative))
+    y_pred = np.clip(y_pred, epsilon, 1. - epsilon)
+    # vect = np.vectorize(lambda true, pred, derivative: entropy(true, pred, derivative))
     if derivative:
-        return np.sum(vect(y_true, y_pred, derivative), axis=0)
-    return np.sum(vect(y_true, y_pred, derivative))
+        # return np.sum(vect(y_true, y_pred, derivative), axis=0)
+        return np.sum(-y_true/y_pred + (1-y_true)/(1-y_pred),axis=0)
+    N = y_pred.shape[0]
+    ce = -np.sum(y_true*np.log(y_pred+1e-9))/N
+    return ce
