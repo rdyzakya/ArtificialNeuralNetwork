@@ -198,6 +198,7 @@ class Sequential:
         self.layers = []
         self.loss = None
         self.errors = []
+        self.random_state = random_state
         np.random.seed(random_state)
 
     def reprJSON(self) -> dict:
@@ -401,3 +402,14 @@ class Sequential:
             self.errors.append(E)
             if E <= self.error_threshold:
                 break
+    
+    def reset(self):
+        """
+        [DESC]
+                Method to reset weights and biases
+        """
+        np.random.seed(self.random_state)
+        self.errors = []
+        for layer in self.layers:
+            if type(layer) == Dense:
+                layer._compile_weight_and_bias(layer.input_dim)
