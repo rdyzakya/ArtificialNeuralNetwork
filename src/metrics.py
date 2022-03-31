@@ -33,6 +33,9 @@ def confusion_matrix(pred_y, validation_y):
 #     print(conf_matrix)
     return conf_matrix
 
+def f1(precison, recall):
+	return 2*(precison*recall/(precison + recall))
+
 def print_scores(conf_matrix, att_names):
 	n = len(att_names)
 	for i in range(n):
@@ -54,5 +57,6 @@ def print_scores(conf_matrix, att_names):
 		print("accuracy:", (tp+tn)/(tp+tn+fp+fn))
 		print("precision:", (tp)/(tp+fp))
 		print("recall:", (tp)/(tp+fn))
+		print("f1:", f1((tp)/(tp+fp), (tp)/(tp+fn)))
 		print()
 
