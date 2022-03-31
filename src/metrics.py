@@ -30,5 +30,29 @@ def confusion_matrix(pred_y, validation_y):
     for i in range(len(pred_y)):
         conf_matrix[val_dict[pred_y[i]]] [val_dict[validation_y[i]]] += 1
 
-    print(conf_matrix)
+#     print(conf_matrix)
     return conf_matrix
+
+def print_scores(conf_matrix, att_names):
+	n = len(att_names)
+	for i in range(n):
+		tp = 0
+		fp = 0
+		tn = 0
+		fn = 0
+		for j in range(n):
+			for k in range(n):
+				if(j == k):
+					tp += conf_matrix[j][k]
+				elif(j == k and j != i):
+					tn += conf_matrix[j][k]
+				elif(j == i):
+					fn += conf_matrix[j][k]
+				elif(k == i):
+					fp += conf_matrix[j][k]
+		print("attribute: ", att_names[i])
+		print("accuracy:", (tp+tn)/(tp+tn+fp+fn))
+		print("precision:", (tp)/(tp+fp))
+		print("recall:", (tp)/(tp+fn))
+		print()
+
