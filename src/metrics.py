@@ -1,6 +1,7 @@
 import numpy
+import math
 
-def confusion_matrix(pred_y, validation_y):
+def confusion_matrix_local(pred_y, validation_y):
     """
     [DESC]
             function to generate confusion matrix numbers
@@ -12,11 +13,8 @@ def confusion_matrix(pred_y, validation_y):
     """
     # get max length of either pred y or val y
     # to handle the case of when either one has no amount of a certain value
-    val_length = len(numpy.unique(validation_y))
-    set_used = validation_y
-    if(len(numpy.unique(pred_y)) > len(numpy.unique(validation_y))):
-        val_length = len(numpy.unique(pred_y))
-        set_used = pred_y
+    val_length = len(numpy.unique(pred_y + validation_y))
+    set_used = pred_y + validation_y
     conf_matrix = numpy.array([[0 for i in range(val_length)] for j in range(val_length)])
     
     # dictionary to translate value strings to indexes
@@ -34,7 +32,7 @@ def confusion_matrix(pred_y, validation_y):
     return conf_matrix
 
 def f1(precison, recall):
-	return 2*(precison*recall/(precison + recall))
+	return 0 if math.isnan(2*(precison*recall/(precison + recall))) else 2*(precison*recall/(precison + recall))
 
 def print_scores(conf_matrix, att_names):
 	n = len(att_names)
@@ -54,8 +52,8 @@ def print_scores(conf_matrix, att_names):
 				else:
 					tn += conf_matrix[j][k]
 		print("====== attribute: ", att_names[i],"======")
-		print("precision:", (tp)/(tp+fp))
-		print("recall:", (tp)/(tp+fn))
+		print("precision:", 0 if math.isnan(tp)/(tp+fp) else tp/(tp+fp))
+		print("recall:", 0 if math.isnan((tp)/(tp+fn)) else (tp)/(tp+fn))
 		print("f1:", f1((tp)/(tp+fp), (tp)/(tp+fn)))
 		print()
 	print("---- accuracy ----")

@@ -58,7 +58,7 @@ class Dense:
             input_dim=self.input_dim,
             weights=self.weights.tolist(),
             biases=self.biases.tolist(),
-            error_term=self.error_term,
+            error_term=self.error_term.tolist(),
         )
 
     def activation(self, obj: np.ndarray, derivative: bool = False) -> np.ndarray:
