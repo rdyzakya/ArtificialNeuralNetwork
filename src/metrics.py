@@ -45,18 +45,18 @@ def print_scores(conf_matrix, att_names):
 		fn = 0
 		for j in range(n):
 			for k in range(n):
-				if(j == k):
+				if(j == k and j == i):
 					tp += conf_matrix[j][k]
-				elif(j == k and j != i):
-					tn += conf_matrix[j][k]
-				elif(j == i):
-					fn += conf_matrix[j][k]
-				elif(k == i):
+				elif(j == i and j != k):
 					fp += conf_matrix[j][k]
-		print("attribute: ", att_names[i])
-		print("accuracy:", (tp+tn)/(tp+tn+fp+fn))
+				elif(k == i and j != k):
+					fn += conf_matrix[j][k]
+				else:
+					tn += conf_matrix[j][k]
+		print("====== attribute: ", att_names[i],"======")
 		print("precision:", (tp)/(tp+fp))
 		print("recall:", (tp)/(tp+fn))
 		print("f1:", f1((tp)/(tp+fp), (tp)/(tp+fn)))
 		print()
-
+	print("---- accuracy ----")
+	print(numpy.trace(conf_matrix)/numpy.sum(conf_matrix))
